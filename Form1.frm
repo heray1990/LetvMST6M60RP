@@ -421,6 +421,71 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Dim isReadingSwVer As Boolean
+
+Private Sub CommandRead_Click()
+'On Error GoTo ErrExit
+    Dim i, j As Integer
+    Dim arrHint
+    
+    i = 0
+    j = 0
+    arrHint = Array("Read Product Model:", "Read Backlight Type:", _
+                    "Read Board Model:", "Read Hardware Version:", _
+                    "Read 2D/3D mode:", "Read Panel Model:", _
+                    "Read Software Version")
+    InitBeforeRunning
+    If MSComm1.PortOpen = False Then
+        MSComm1.PortOpen = True
+    End If
+
+    For i = 1 To itemNumOfTvInfo
+        ClearComBuf
+        Log_Info CStr(arrHint(i - 1))
+        GetProperty Int(i)
+        DelayMS 500
+        Call DelaySWithCmdFlag(cmdReceiveWaitS, isCmdDataRecv)
+            
+        If isCmdDataRecv = False Then
+            If j > cmdResendTimes Then
+                j = 0
+                Log_Info "Cannot read the property. Please do the Letv Reset!!!"
+                MsgBox "Please do the Letv Reset!"
+                GoTo FAIL
+            Else
+                j = j + 1
+                i = i - 1
+            End If
+        Else
+            j = 0
+        End If
+    Next i
+    
+    ClearComBuf
+    Log_Info CStr(arrHint(6))
+    isReadingSwVer = True
+    GetSwVer
+    DelayMS 500
+    Call DelaySWithCmdFlag(cmdReceiveWaitS, isCmdDataRecv)
+            
+    If isCmdDataRecv = False Then
+        If j > cmdResendTimes Then
+            j = 0
+            Log_Info "Cannot read the property. Please do the Letv Reset!!!"
+            MsgBox "Please do the Letv Reset!"
+            GoTo FAIL
+        Else
+            j = j + 1
+            i = i - 1
+        End If
+    Else
+        j = 0
+    End If
+    
+    isReadingSwVer = False
+FAIL:
+End Sub
+
 Private Sub Form_Load()
     lblVersion.Caption = "Version " & App.Major & "." & App.Minor & "." & App.Revision
     SubInit
@@ -443,6 +508,16 @@ Private Sub MenuItemProperities_Click()
     FrmProperities.Show
 End Sub
 
+Private Sub MSComm1_OnComm()
+    Select Case MSComm1.CommEvent
+        Case comEvReceive
+            DelayMS 100
+            Call DataReceive
+        'Case comEvSend
+        Case Else
+    End Select
+End Sub
+
 Private Sub SubInit()
     Dim clsConfigData As ProjectConfig
 
@@ -462,6 +537,8 @@ Private Sub SubInit()
     gstrSoftwareVersion = clsConfigData.SoftwareVersion
 
     Set clsConfigData = Nothing
+    
+    isCmdDataRecv = False
 End Sub
 
 Public Sub SubInitComPort()
@@ -485,5 +562,96 @@ Public Sub SubInitComPort()
     MSComm1.RThreshold = 1
     MSComm1.InBufferSize = 1024
     MSComm1.OutBufferSize = 512
+End Sub
+
+Private Sub InitBeforeRunning()
+    isCmdDataRecv = False
+    isReadingSwVer = False
+    
+    For i = 0 To itemNumOfTvInfo
+        lbTVInfo(i).Caption = strNoRecvData
+        lbTVInfo(i).BackColor = &HFFFFFF
+    Next i
+
+    Log_Clear
+    'tbLogInfo.ForeColor = &H80000008
+End Sub
+
+Private Sub ClearComBuf()
+    MSComm1.InBufferCount = 0
+    MSComm1.OutBufferCount = 0
+End Sub
+
+Private Sub DataReceive()
+    Dim ReceiveArr() As Byte
+    Dim receiveData As String
+    Dim Counter As Integer
+    Dim i, j, tmp, firstByteOfDataIdx As Integer
+    
+    firstByteOfDataIdx = -1
+    Counter = MSComm1.InBufferCount
+
+    If (Counter > 0) Then
+        receiveData = ""
+        ReceiveArr = MSComm1.Input
+
+        For i = 0 To (Counter - 1)
+            If i < (Counter - 1) Then
+                If Not isReadingSwVer Then
+                    If (ReceiveArr(i) = &HA3) And (i + 2) = (Counter - 1) Then
+                        tmp = 0
+                        For j = 0 To 1
+                            tmp = tmp + ReceiveArr(j + i)
+                        Next j
+                        
+                        tmp = &HFF - tmp And &HFF
+                        
+                        If tmp = ReceiveArr(i + 2) Then
+                            firstByteOfDataIdx = i
+                        End If
+                    End If
+                Else
+                    If (ReceiveArr(i) = &HA6) And (i + 5) = (Counter - 1) Then
+                        tmp = 0
+                        For j = 0 To 4
+                            tmp = tmp + ReceiveArr(j + i)
+                        Next j
+                        
+                        tmp = &HFF - tmp And &HFF
+                        
+                        If tmp = ReceiveArr(i + 5) Then
+                            firstByteOfDataIdx = i
+                        End If
+                    End If
+                End If
+            End If
+        Next i
+
+        If firstByteOfDataIdx > 0 Then
+            isCmdDataRecv = True
+            If Not isReadingSwVer Then
+                For i = firstByteOfDataIdx To firstByteOfDataIdx + 2
+                    If (ReceiveArr(i) < 16) Then
+                        receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + Space(1)
+                    Else
+                        receiveData = receiveData + Hex(ReceiveArr(i)) + Space(1)
+                    End If
+                Next i
+            Else
+                For i = firstByteOfDataIdx To firstByteOfDataIdx + 5
+                    If (ReceiveArr(i) < 16) Then
+                        receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + Space(1)
+                    Else
+                        receiveData = receiveData + Hex(ReceiveArr(i)) + Space(1)
+                    End If
+                Next i
+            End If
+            
+            Log_Info receiveData
+        Else
+            tbLogInfo.Text = tbLogInfo.Text + vbCrLf
+            tbLogInfo.SelStart = Len(tbLogInfo.Text)
+        End If
+    End If
 End Sub
 

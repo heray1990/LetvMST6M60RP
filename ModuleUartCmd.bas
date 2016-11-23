@@ -56,17 +56,17 @@ Private Sub SaveCmdToLog(ByRef data() As Byte)
             strSendData = strSendData + Hex(data(i)) + " "
         End If
     Next i
-    SaveLogInFile strSendData
+    Log_Info strSendData
 End Sub
 
-Public Sub SetProperty(intProperty As Integer, intVal As Integer)
-    'E0 0B 40 XD 02 XX XX 00 00 00 CHK
+Public Sub GetProperty(intProperty As Integer)
+    'E0 0B 40 XD 03 XX 00 00 00 00 CHK
     mSendDataBuf(0) = &HE0
     mSendDataBuf(1) = &HB
     mSendDataBuf(2) = &H40
-    mSendDataBuf(4) = &H2
+    mSendDataBuf(4) = &H3
     mSendDataBuf(5) = intProperty
-    mSendDataBuf(6) = intVal
+    mSendDataBuf(6) = &H0
     mSendDataBuf(7) = &H0
     mSendDataBuf(8) = &H0
     mSendDataBuf(9) = &H0
@@ -76,27 +76,29 @@ Public Sub SetProperty(intProperty As Integer, intVal As Integer)
     mSendDataBuf(10) = CalChkSum(mSendDataBuf)
     
     SaveCmdToLog mSendDataBuf
-
+    
+    isCmdDataRecv = False
     SendCmd
 End Sub
 
-Public Sub BurningMode(intBurningMode As Integer)
-    'E0 0B 40 X7 0F 01 XX 00 00 00 CHK
+Public Sub GetSwVer()
+    'E0 0B 40 1D 01 00 00 00 00 00 B6
     mSendDataBuf(0) = &HE0
     mSendDataBuf(1) = &HB
     mSendDataBuf(2) = &H40
-    mSendDataBuf(4) = &HF
-    mSendDataBuf(5) = &H1
-    mSendDataBuf(6) = intBurningMode
+    mSendDataBuf(4) = &H1
+    mSendDataBuf(5) = &H0
+    mSendDataBuf(6) = &H0
     mSendDataBuf(7) = &H0
     mSendDataBuf(8) = &H0
     mSendDataBuf(9) = &H0
 
     DataToDDC
-    mSendDataBuf(3) = CalDDCChkSum(mDDCDataWithoutChksum) * 16 + &H7
+    mSendDataBuf(3) = CalDDCChkSum(mDDCDataWithoutChksum) * 16 + &HD
     mSendDataBuf(10) = CalChkSum(mSendDataBuf)
-
+    
     SaveCmdToLog mSendDataBuf
-
+    
+    isCmdDataRecv = False
     SendCmd
 End Sub
