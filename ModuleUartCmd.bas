@@ -60,6 +60,7 @@ Private Sub SaveCmdToLog(ByRef data() As Byte)
 End Sub
 
 Public Sub GetProperty(intProperty As Integer)
+    cmdIdentifyNum = intProperty - 1
     'E0 0B 40 XD 03 XX 00 00 00 00 CHK
     mSendDataBuf(0) = &HE0
     mSendDataBuf(1) = &HB
@@ -82,6 +83,7 @@ Public Sub GetProperty(intProperty As Integer)
 End Sub
 
 Public Sub GetSwVer()
+    cmdIdentifyNum = 6
     'E0 0B 40 1D 01 00 00 00 00 00 B6
     mSendDataBuf(0) = &HE0
     mSendDataBuf(1) = &HB

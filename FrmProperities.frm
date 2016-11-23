@@ -208,7 +208,6 @@ Dim arrBoradModel
 Dim arrHwVer
 Dim arrDimension
 Dim arrPanelModel
-Dim arrBurningMode
 
 Private Sub CommandSet_Click()
 On Error GoTo ErrExit
@@ -264,7 +263,8 @@ On Error GoTo ErrExit
             Exit For
         End If
     Next i
-    clsSaveConfigData.SoftwareVersion = TextSwVer.Text
+    clsSaveConfigData.SoftwareVersion = Trim(TextSwVer.Text)
+    gstrSoftwareVersion = Trim(TextSwVer.Text)
 
     clsSaveConfigData.SaveConfigData
     Set clsSaveConfigData = Nothing
@@ -305,9 +305,8 @@ Private Sub Form_Load()
     arrHwVer = Array("H1000", "H2000", "H3000", "H5000", "H6000")
     arrDimension = Array("2D", "3D")
     arrPanelModel = Array("X4_70_2D", "X4_70_3D", "X3_55_120", _
-                            "X3_55_60", "X4_65_Curve", "X4_55_Blade", _
+                            "X3_55_60", "X4_65_Curve", "X4_65_Blade", _
                             "X4_70S", "X4_75S")
-    arrBurningMode = Array("White Pattern", "Color Bar", "Color Square")
 
     For i = 0 To 10
         ComboProduct.AddItem arrProductModel(i)

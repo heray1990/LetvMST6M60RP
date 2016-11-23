@@ -39,7 +39,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "软件版本"
+         Caption         =   "产品类型"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -62,7 +62,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "产品类型"
+         Caption         =   "背光类型"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -85,7 +85,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "制版阶段"
+         Caption         =   "硬件版本"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -108,7 +108,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "背光类型"
+         Caption         =   "制版阶段"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -131,7 +131,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "2D/3D 类型"
+         Caption         =   "屏型号"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -154,7 +154,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "硬件版本"
+         Caption         =   "2D/3D 类型"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -177,7 +177,7 @@ Begin VB.Form Form1
          Appearance      =   0  'Flat
          BackColor       =   &H00808080&
          BorderStyle     =   1  'Fixed Single
-         Caption         =   "屏型号"
+         Caption         =   "软件版本"
          BeginProperty Font 
             Name            =   "Arial"
             Size            =   14.25
@@ -422,6 +422,12 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim isReadingSwVer As Boolean
+Dim arrProductModel
+Dim arrBacklightType
+Dim arrBoradModel
+Dim arrHwVer
+Dim arrDimension
+Dim arrPanelModel
 
 Private Sub CommandRead_Click()
 'On Error GoTo ErrExit
@@ -585,8 +591,13 @@ End Sub
 Private Sub DataReceive()
     Dim ReceiveArr() As Byte
     Dim receiveData As String
+    Dim strMagic As String
     Dim Counter As Integer
-    Dim i, j, tmp, firstByteOfDataIdx As Integer
+    Dim tmpCounter As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim tmp As Integer
+    Dim firstByteOfDataIdx As Integer
     
     firstByteOfDataIdx = -1
     Counter = MSComm1.InBufferCount
@@ -628,26 +639,41 @@ Private Sub DataReceive()
         Next i
 
         If firstByteOfDataIdx > 0 Then
-            isCmdDataRecv = True
             If Not isReadingSwVer Then
-                For i = firstByteOfDataIdx To firstByteOfDataIdx + 2
-                    If (ReceiveArr(i) < 16) Then
-                        receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + Space(1)
-                    Else
-                        receiveData = receiveData + Hex(ReceiveArr(i)) + Space(1)
-                    End If
-                Next i
+                tmpCounter = firstByteOfDataIdx + 2
             Else
-                For i = firstByteOfDataIdx To firstByteOfDataIdx + 5
-                    If (ReceiveArr(i) < 16) Then
-                        receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + Space(1)
+                tmpCounter = firstByteOfDataIdx + 5
+            End If
+
+            For i = firstByteOfDataIdx To tmpCounter
+                If (ReceiveArr(i) < 16) Then
+                    receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + Space(1)
+                Else
+                    receiveData = receiveData + Hex(ReceiveArr(i)) + Space(1)
+                End If
+            Next i
+
+            Log_Info receiveData
+            receiveData = ""
+            If Not isReadingSwVer Then
+                receiveData = CStr(ReceiveArr(firstByteOfDataIdx + 1))
+            Else
+                For i = tmpCounter - 1 To firstByteOfDataIdx + 1 Step -1
+                    If i = firstByteOfDataIdx + 1 Then
+                        strMagic = ""
                     Else
-                        receiveData = receiveData + Hex(ReceiveArr(i)) + Space(1)
+                        strMagic = "."
+                    End If
+                    
+                    If (ReceiveArr(i) < 16) Then
+                        receiveData = receiveData + "0" + Hex(ReceiveArr(i)) + strMagic
+                    Else
+                        receiveData = receiveData + Hex(ReceiveArr(i)) + strMagic
                     End If
                 Next i
             End If
             
-            Log_Info receiveData
+            infoCompare cmdIdentifyNum, receiveData
         Else
             tbLogInfo.Text = tbLogInfo.Text + vbCrLf
             tbLogInfo.SelStart = Len(tbLogInfo.Text)
@@ -655,3 +681,91 @@ Private Sub DataReceive()
     End If
 End Sub
 
+Private Sub infoCompare(cmdIdx As Integer, recvData As String)
+    Dim i As Integer
+
+    isCmdDataRecv = True
+
+    If cmdIdx = 0 Then
+        arrProductModel = Array("UNKNOWN", "Max4_70", "Max4_65C", _
+                            "Max4_55B", "Max4_65B", "Max4_75B", _
+                            "Max4_70S", "Max4_75S", "Max5_55_938", _
+                            "Max4_X70", "Max5_65_938")
+        lbTVInfo(0).Caption = arrProductModel(Val(recvData))
+
+        If gintProductModel = Val(recvData) Then
+            lbTVInfo(0).BackColor = &HFF00&
+        Else
+            lbTVInfo(0).BackColor = &HFF&
+        End If
+    End If
+
+    If cmdIdx = 1 Then
+        arrBacklightType = Array("PWM", "Local Dimming")
+        lbTVInfo(1).Caption = arrBacklightType(Val(recvData) - 1)
+
+        If gintBacklightType = Val(recvData) Then
+            lbTVInfo(1).BackColor = &HFF00&
+        Else
+            lbTVInfo(1).BackColor = &HFF&
+        End If
+    End If
+
+    If cmdIdx = 2 Then
+        arrBoradModel = Array("EVT", "EVT2", "EVT3", _
+                        "DVT", "DVT2", "DVT3", _
+                        "PVT", "MP")
+        lbTVInfo(2).Caption = arrBoradModel(Val(recvData) - 1)
+                            
+        If gintBoardModel = Val(recvData) Then
+            lbTVInfo(2).BackColor = &HFF00&
+        Else
+            lbTVInfo(2).BackColor = &HFF&
+        End If
+    End If
+
+    If cmdIdx = 3 Then
+        arrHwVer = Array("H1000", "H2000", "H3000", "H5000", "H6000")
+        lbTVInfo(3).Caption = arrHwVer(Val(recvData) - 1)
+                            
+        If gintHardwareVersion = Val(recvData) Then
+            lbTVInfo(3).BackColor = &HFF00&
+        Else
+            lbTVInfo(3).BackColor = &HFF&
+        End If
+    End If
+
+    If cmdIdx = 4 Then
+        arrDimension = Array("2D", "3D")
+        lbTVInfo(4).Caption = arrDimension(Val(recvData) - 1)
+                            
+        If gint2D3DModel = Val(recvData) Then
+            lbTVInfo(4).BackColor = &HFF00&
+        Else
+            lbTVInfo(4).BackColor = &HFF&
+        End If
+    End If
+
+    If cmdIdx = 5 Then
+        arrPanelModel = Array("X4_70_2D", "X4_70_3D", "X3_55_120", _
+                            "X3_55_60", "X4_65_Curve", "X4_65_Blade", _
+                            "X4_70S", "X4_75S")
+        lbTVInfo(5).Caption = arrPanelModel(Val(recvData) - 1)
+                            
+        If gintPanelModel = Val(recvData) Then
+            lbTVInfo(5).BackColor = &HFF00&
+        Else
+            lbTVInfo(5).BackColor = &HFF&
+        End If
+    End If
+    
+    If cmdIdx = 6 Then
+        lbTVInfo(6).Caption = recvData
+                            
+        If gstrSoftwareVersion = recvData Then
+            lbTVInfo(6).BackColor = &HFF00&
+        Else
+            lbTVInfo(6).BackColor = &HFF&
+        End If
+    End If
+End Sub
