@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<common baud="115200" id="6"/>
+	<MonitorProductModel>10</MonitorProductModel>
+	<MonitorBacklightType>1</MonitorBacklightType>
+	<MonitorBoardModel>1</MonitorBoardModel>
+	<MonitorHardwareVersion>1</MonitorHardwareVersion>
+	<Monitor2D3DModel>1</Monitor2D3DModel>
+	<MonitorPanelModel>6</MonitorPanelModel>
+	<SoftwareVersion>02.28.09</SoftwareVersion>
+</config>
