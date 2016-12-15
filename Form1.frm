@@ -489,6 +489,10 @@ Private Sub CommandRead_Click()
     End If
     
     isReadingSwVer = False
+    
+    BurningMode 0
+    RebootMonitor
+    Exit Sub
 FAIL:
 End Sub
 
