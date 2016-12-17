@@ -13,10 +13,10 @@ Begin VB.Form Form1
    Begin VB.CommandButton CommandRead 
       Caption         =   "读属性"
       Height          =   375
-      Left            =   6240
+      Left            =   6000
       TabIndex        =   17
       Top             =   3960
-      Width           =   1095
+      Width           =   1350
    End
    Begin VB.Frame Frame1 
       Caption         =   "Monitor 属性信息"
