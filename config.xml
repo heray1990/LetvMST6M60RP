@@ -4,8 +4,8 @@
 	<MonitorProductModel>10</MonitorProductModel>
 	<MonitorBacklightType>1</MonitorBacklightType>
 	<MonitorBoardModel>4</MonitorBoardModel>
-	<MonitorHardwareVersion>1</MonitorHardwareVersion>
+	<MonitorHardwareVersion>3</MonitorHardwareVersion>
 	<Monitor2D3DModel>1</Monitor2D3DModel>
-	<MonitorPanelModel>6</MonitorPanelModel>
-	<SoftwareVersion>00.02.28.18</SoftwareVersion>
+	<MonitorPanelModel>10</MonitorPanelModel>
+	<SoftwareVersion>00.02.28.1F</SoftwareVersion>
 </config>

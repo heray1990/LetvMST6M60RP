@@ -752,8 +752,8 @@ Private Sub infoCompare(cmdIdx As Integer, recvData As String)
 
     If cmdIdx = 5 Then
         arrPanelModel = Array("X4_70_2D", "X4_70_3D", "X3_55_120", _
-                            "X3_55_60", "X4_65_Curve", "X4_65_Blade", _
-                            "X4_70S", "X4_75S")
+                            "X3_55_60", "X4_65_Curve", "X4_55_Blade", _
+                            "X4_70S", "X4_75S", "X4_55_938", "X4_65_938")
         lbTVInfo(5).Caption = arrPanelModel(Val(recvData) - 1)
                             
         If gintPanelModel = Val(recvData) Then
