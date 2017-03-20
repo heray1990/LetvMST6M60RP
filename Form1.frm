@@ -687,9 +687,6 @@ Private Sub DataReceive()
             End If
             
             infoCompare cmdIdentifyNum, receiveData
-        Else
-            tbLogInfo.Text = tbLogInfo.Text + vbCrLf
-            tbLogInfo.SelStart = Len(tbLogInfo.Text)
         End If
     End If
 End Sub
