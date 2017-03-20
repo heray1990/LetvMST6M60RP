@@ -1,7 +1,7 @@
 VERSION 5.00
-Object = "{648A5603-2C6E-101B-82B6-000000000014}#1.1#0"; "MSCOMM32.OCX"
+Object = "{648A5603-2C6E-101B-82B6-000000000014}#1.1#0"; "mscomm32.ocx"
 Begin VB.Form Form1 
-   Caption         =   "Letv Max65 属性比对工具"
+   Caption         =   "Letv MST6M60 属性比对工具"
    ClientHeight    =   4515
    ClientLeft      =   60
    ClientTop       =   750
@@ -12,11 +12,20 @@ Begin VB.Form Form1
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton CommandRead 
       Caption         =   "读属性"
-      Height          =   375
-      Left            =   6000
+      BeginProperty Font 
+         Name            =   "Arial"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   495
+      Left            =   5880
       TabIndex        =   17
-      Top             =   3960
-      Width           =   1350
+      Top             =   3840
+      Width           =   1470
    End
    Begin VB.Frame Frame1 
       Caption         =   "Monitor 属性信息"
@@ -693,8 +702,8 @@ Private Sub infoCompare(cmdIdx As Integer, recvData As String)
     If cmdIdx = 0 Then
         arrProductModel = Array("UNKNOWN", "Max4_70", "Max4_65C", _
                             "Max4_55B", "Max4_65B", "Max4_75B", _
-                            "Max4_70S", "Max4_75S", "Max5_55_938", _
-                            "Max4_X70", "Max5_65_938")
+                            "Max4_70S", "Max4_75S", "Max455", _
+                            "Max4_X70", "Max465", "U55", "U65", "U75")
         lbTVInfo(0).Caption = arrProductModel(Val(recvData))
 
         If gintProductModel = Val(recvData) Then
@@ -753,7 +762,8 @@ Private Sub infoCompare(cmdIdx As Integer, recvData As String)
     If cmdIdx = 5 Then
         arrPanelModel = Array("X4_70_2D", "X4_70_3D", "X3_55_120", _
                             "X3_55_60", "X4_65_Curve", "X4_55_Blade", _
-                            "X4_70S", "X4_75S", "X4_55_938", "X4_65_938")
+                            "X4_70S", "X4_75S", "X4_55", "X4_65", _
+                            "UNQ_55", "UNQ_65", "UNQ_75")
         lbTVInfo(5).Caption = arrPanelModel(Val(recvData) - 1)
                             
         If gintPanelModel = Val(recvData) Then
